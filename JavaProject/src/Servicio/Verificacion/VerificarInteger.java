@@ -12,18 +12,19 @@ public class VerificarInteger implements IVerificacion {
 
         for (Method method : persona.getClass().getDeclaredMethods()) {
 
-            if (method.isAnnotationPresent(AnotacionInteger.class)) {
-                AnotacionInteger anotacion = method.getAnnotation(AnotacionInteger.class);
-
-                Integer paramInteger =(Integer) method.invoke(persona);
-
-                if (paramInteger > anotacion.maxNumero()) {
-                    message += ("\n* Error, se supero el maximo de caracter de: " + anotacion.tipo());
-                }
-
-                // Mas verificaciones...
-                // code...
+            if (!method.isAnnotationPresent(AnotacionInteger.class)) {
+                continue;
             }
+            AnotacionInteger anotacion = method.getAnnotation(AnotacionInteger.class);
+
+            Integer paramInteger =(Integer) method.invoke(persona);
+
+            if (paramInteger > anotacion.maxNumero()) {
+                message += ("\n* Error, se supero el maximo de: " + anotacion.tipo());
+            }
+
+            // Mas verificaciones...
+            // code...
         }
         return message;
     }
