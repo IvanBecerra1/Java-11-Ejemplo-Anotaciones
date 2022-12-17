@@ -1,6 +1,9 @@
 package Servicio.Verificacion;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+
 import Entidad.Persona;
 import Anotaciones.AnotacionInteger;
 
@@ -8,24 +11,29 @@ public class VerificarInteger implements IVerificacion {
 
     @Override
     public String verificarMetodo(Persona persona) throws Exception {
-        String message = "";
+        StringBuilder text = new StringBuilder();
 
-        for (Method method : persona.getClass().getDeclaredMethods()) {
+        Arrays.stream(persona.getClass().getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(AnotacionInteger.class))
+                .forEach(method -> {
+                    AnotacionInteger anotacion = method.getAnnotation(AnotacionInteger.class);
+                    Integer paramInteger = null;
 
-            if (!method.isAnnotationPresent(AnotacionInteger.class)) {
-                continue;
-            }
-            AnotacionInteger anotacion = method.getAnnotation(AnotacionInteger.class);
+                    try {
+                        paramInteger = (Integer) method.invoke(persona);
+                    }catch (Exception ex) {
+                        throw new RuntimeException();
+                    }
 
-            Integer paramInteger =(Integer) method.invoke(persona);
+                    if (paramInteger > anotacion.maxNumero()) {
+                        text.append("\n* Error, se supero el maximo de: " + anotacion.tipo());
+                    }
 
-            if (paramInteger > anotacion.maxNumero()) {
-                message += ("\n* Error, se supero el maximo de: " + anotacion.tipo());
-            }
+                    // mas verificaciones
+                    // code..
+                });
 
-            // Mas verificaciones...
-            // code...
-        }
-        return message;
+        return text.toString();
     }
+
 }

@@ -1,33 +1,37 @@
 package Servicio.Verificacion;
 
+import Anotaciones.AnotacionInteger;
 import Anotaciones.AnotacionString;
 import Entidad.Persona;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public class VerificarString implements IVerificacion {
     @Override
     public String verificarMetodo(Persona persona) throws Exception {
-        String message = "";
+        StringBuilder text = new StringBuilder();
 
-        for (Method method : persona.getClass().getDeclaredMethods()) {
+        Arrays.stream(persona.getClass().getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(AnotacionString.class))
+                .forEach(method -> {
+                    AnotacionString anotacion = method.getAnnotation(AnotacionString.class);
+                    String paramString = null;
 
-            if (!method.isAnnotationPresent(AnotacionString.class)) {
-                continue;
-            }
+                    try {
+                        paramString = (String) method.invoke(persona);
+                    }catch (Exception ex) {
+                        throw new RuntimeException();
+                    }
 
-            AnotacionString anotacion = method.getAnnotation(AnotacionString.class);
+                    if (paramString.length() > anotacion.maxLenght()) {
+                        text.append("\n* Error, se supero el maximo de caracter de: " + anotacion.tipo());
+                    }
 
-            String paramString =(String) method.invoke(persona);
+                    // Mas verificaciones...
+                    // code...
+                });
 
-            if (paramString.length() > anotacion.maxLenght()) {
-                message += ("\n* Error, se supero el maximo de caracter de: " + anotacion.tipo());
-            }
-
-            // Mas verificaciones...
-            // code...
-        }
-
-        return message;
+        return text.toString();
     }
 }
